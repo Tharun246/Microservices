@@ -16,11 +16,11 @@ public class InventoryController
     @Autowired
     private InventoryService inventoryService;
 
-    @GetMapping("/{sku-code}")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<InvResponse> isInStock(@PathVariable(name = "sku-code") List<String> skuCode)
+    public List<InvResponse> isInStock(@RequestParam List<String> skuCodes)
     {
-        return inventoryService.isInStockInList(skuCode);
+        return inventoryService.isInStockInList(skuCodes);
     }
 
 }

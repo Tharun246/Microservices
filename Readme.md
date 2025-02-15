@@ -8,10 +8,13 @@ To facilitate communication between services, we will use **WebClient**.
 
 1. **Add the Spring WebFlux dependency** to your project to enable WebClient.
 2. **Create a configuration file** in the order service with a bean to return the WebClient instance, as shown below:
+3. When we send a request from order service it'll go to inventory service
+   But as we have multiple instances of inventory running , we need to enable load balancing
 
     ```java
     @Bean
-    public WebClient webClient() {
+   @LoadBalanced
+    public WebClient.Builder webClient() {
         return WebClient.builder().build();
     }
     ```
@@ -25,7 +28,8 @@ In the order service, when a new order is placed, we will first call the **Inven
 To pass query parameters using WebClient, you can make a **GET request** like this:
 
 ``` java
-InvResponse[] invResponses = webClient.get()
+InvResponse[] invResponses = webClient.Builder.build()
+        .get()
         .uri("http://localhost:8081/api/inventory",
              uriBuilder -> uriBuilder.queryParam("skuCodes", skuCodes).build())
         .retrieve()
@@ -52,7 +56,26 @@ To enable service discovery, we will create a discovery service that stores info
         <version>3.1.1</version>
     </dependency>
     ```
-
+**Add the below in Parent pom.xml file**
+```xml
+<dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+```
+```xml
+ <properties>
+    <java.version>17</java.version>
+    <spring-cloud.version>2024.0.0</spring-cloud.version>
+ </properties>
+```
 2. **Create a Spring Boot application file** and annotate it with `@EnableEurekaServer`:
 
     ```java
@@ -85,25 +108,30 @@ Add the following dependency:
     </dependency>
 ```
 
-Then, annotate each microservice with `@EnableEurekaClient`:
+Then, annotate each microservice with `@EnableDiscoveryClient`:
 
    ``` java
-@EnableEurekaClient
+@EnableDiscoveryClient
    ```
 ### **In `application.properties` for Each Service**
 
 Add the following configuration:
    ``` properties
 eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+eureka.instance.prefer-ip-address=true
    ```
-
 ---
 
 ## **Dynamic Port**
 
 Instead of hardcoding the port, you can set the port as **0** to let Spring Boot select an available port during runtime.
-
+Add below to the properties file
 ```properties
 server.port=0
+eureka.instance.instance-id=${spring.application.name}:${random.int}
 ```
 
+## **API Gateway**
+```
+Add 
+```
