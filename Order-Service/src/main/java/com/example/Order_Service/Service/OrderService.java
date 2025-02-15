@@ -71,7 +71,8 @@ public class OrderService {
 
         order.setOrderLineItemsList(list);
         // Call inventory service if it is in stock
-        Boolean res = webClient.get().uri("http://localhost:8890/api/inventory")
+        Boolean res = webClient.get().
+                uri("http://localhost:8890/api/inventory")
                 .retrieve()
                 .bodyToMono(Boolean.class)
                 .block();
