@@ -9,20 +9,22 @@ import com.example.Order_Service.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
-public class OrderService
-{
+public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    public OrderLineItems mapToOrder(OrderLineItemsDto orderLineItemsDto)
-    {
-        OrderLineItems orderLineItems=new OrderLineItems();
+    //    @Autowired
+    private WebClient webClient;
+
+    public OrderLineItems mapToOrder(OrderLineItemsDto orderLineItemsDto) {
+        OrderLineItems orderLineItems = new OrderLineItems();
 
         orderLineItems.setPrice(orderLineItemsDto.getPrice());
         orderLineItems.setSkuCode(orderLineItemsDto.getSkuCode());
@@ -31,9 +33,8 @@ public class OrderService
         return orderLineItems;
     }
 
-    public OrderLineItemsDto mapToDto(OrderLineItems orderLineItems)
-    {
-        OrderLineItemsDto orderLineItemsDto=new OrderLineItemsDto();
+    public OrderLineItemsDto mapToDto(OrderLineItems orderLineItems) {
+        OrderLineItemsDto orderLineItemsDto = new OrderLineItemsDto();
         orderLineItemsDto.setPrice(orderLineItems.getPrice());
         orderLineItemsDto.setSkuCode(orderLineItems.getSkuCode());
         orderLineItemsDto.setQuantity(orderLineItems.getQuantity());
@@ -41,9 +42,8 @@ public class OrderService
         return orderLineItemsDto;
     }
 
-    private OrderResponse mapToOrderResponse(Order order)
-    {
-        OrderResponse orderResponse=new OrderResponse();
+    private OrderResponse mapToOrderResponse(Order order) {
+        OrderResponse orderResponse = new OrderResponse();
 
         orderResponse.setId(order.getId());
 
@@ -59,36 +59,31 @@ public class OrderService
         return orderResponse;
     }
 
-    public void placeOrder(OrderRequest orderRequest)
-    {
-        Order order=new Order();
+    public void placeOrder(OrderRequest orderRequest) {
+        Order order = new Order();
 
         order.setOrderNumber(UUID.randomUUID().toString());
 
         List<OrderLineItems> list = orderRequest.getOrderLineItemsDto()
-                                    .stream()
-                                    .map(this::mapToOrder)
-                                    .toList();
+                .stream()
+                .map(this::mapToOrder)
+                .toList();
 
         order.setOrderLineItemsList(list);
+        // Call inventory service if it is in stock
+        Boolean res = webClient.get().uri("http://localhost:8890/api/inventory")
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block();
 
-        orderRepository.save(order);
+        if (Boolean.TRUE.equals(res))
+            orderRepository.save(order);
+        throw new IllegalArgumentException("Product not in stock");
     }
-
-//    public List<OrderResponse> getOrderResponse()
-//    {
-//        List<Order> allOrders=orderRepository.findAll();
-//
-//        return allOrders.stream().map(this::mapToOrderResponse).toList();
-//    }
 
     public List<Order> getOrders()
     {
-        List<Order> allOrders=orderRepository.findAll();
-
-        return allOrders;
+        return orderRepository.findAll();
     }
-
-
 
 }
