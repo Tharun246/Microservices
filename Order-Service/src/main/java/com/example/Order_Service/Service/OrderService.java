@@ -18,19 +18,19 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-//@Transactional(readOnly = true)
 public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
-    private WebClient webClient;
+    private WebClient.Builder webClientBuilder;
 
     public OrderLineItems mapToOrder(OrderLineItemsDto orderLineItemsDto) {
         OrderLineItems orderLineItems = new OrderLineItems();
 
         orderLineItems.setPrice(orderLineItemsDto.getPrice());
         orderLineItems.setSkuCode(orderLineItemsDto.getSkuCode());
+
         orderLineItems.setQuantity(orderLineItemsDto.getQuantity());
 
         return orderLineItems;
@@ -62,7 +62,7 @@ public class OrderService {
         return orderResponse;
     }
 
-    public void placeOrder(OrderRequest orderRequest) {
+    public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
 
         order.setOrderNumber(UUID.randomUUID().toString());
@@ -73,18 +73,30 @@ public class OrderService {
                 .toList();
 
         order.setOrderLineItemsList(list);
+
         List<String> skuCodes=order.getOrderLineItemsList().stream().map(OrderLineItems::getSkuCode).toList();
+
         // Pass the skuCode list
-        InvResponse[] res = webClient.get().
-                uri("http://localhost:8890/api/inventory",uriBuilder -> uriBuilder.queryParam("skuCodes", skuCodes).build())
+        InvResponse[] res = webClientBuilder.build()
+                .get().
+                uri("http://inventory-service/api/inventory",uriBuilder -> uriBuilder.queryParam("skuCodes", skuCodes).build())
                 .retrieve()
                 .bodyToMono(InvResponse[].class)
                 .block();
-        // check if every item available
+
+
+        // check if every item from the list available
         boolean isIn= Arrays.stream(res).allMatch(InvResponse::isInStock);
-        if (isIn)
+
+        if (res.length>0 && isIn)
+        {
             orderRepository.save(order);
-        throw new IllegalArgumentException("Product not in stock");
+            System.out.println("Order Placed Successfully");
+            return "Order Placed";
+        }
+        else {
+            return("Product not in stock");
+        }
     }
 
     public List<Order> getOrders()

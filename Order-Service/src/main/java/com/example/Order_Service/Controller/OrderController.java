@@ -14,28 +14,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/order")
-public class OrderController
-{
+public class OrderController {
     @Autowired
     private OrderService orderService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void placeOrder(@RequestBody OrderRequest orderRequest)
-    {
+    public String placeOrder(@RequestBody OrderRequest orderRequest) {
         System.out.println(orderRequest.getOrderLineItemsDto());
-        orderService.placeOrder(orderRequest);
+        return orderService.placeOrder(orderRequest);
     }
 
     @GetMapping
-    public List<Order> getOrders()
-    {
+    public List<Order> getOrders() {
         return orderService.getOrders();
     }
-
-//    @GetMapping
-//    public List<OrderResponse> getOrderResponse()
-//    {
-//        return orderService.getOrderResponse();
-//    }
 }
+
+

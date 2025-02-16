@@ -30,7 +30,7 @@ To pass query parameters using WebClient, you can make a **GET request** like th
 ``` java
 InvResponse[] invResponses = webClient.Builder.build()
         .get()
-        .uri("http://localhost:8081/api/inventory",
+        .uri("http://inventory-service/api/inventory",
              uriBuilder -> uriBuilder.queryParam("skuCodes", skuCodes).build())
         .retrieve()
         .bodyToMono(InvResponse[].class)
@@ -88,7 +88,7 @@ To enable service discovery, we will create a discovery service that stores info
     }
     ```
 
-3. **In your `application.properties`, configure Eureka Server**:
+3.**In your `application.properties`, configure Eureka Server**:
 
     ```properties
     eureka.instance.hostname=localhost
@@ -132,6 +132,48 @@ eureka.instance.instance-id=${spring.application.name}:${random.int}
 ```
 
 ## **API Gateway**
+> Route requests from user to the respective service
+### Add the below dependencies
+```properties
+ <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-gateway-mvc</artifactId>
+    </dependency>
 ```
-Add 
+```xml
+ <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+```
+### `Application.properties` file
+```properties
+eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
+spring.application.name=api-gateway
+
+# logging level
+logging.level.root=INFO
+logging.level.org.springframework.cloud.gateway.route.RouteDefinitionLocator=INFO
+logging.level.org.springframework.cloud.gateway=TRACE
+```
+```properties
+# Product service route
+# we can define multiple routes , that's why the indexing
+spring.cloud.gateway.routes[0].id=product-service
+spring.cloud.gateway.routes[0].uri=lb://product-service
+# whenever we receive a request with path like this 
+# It will call product service
+spring.cloud.gateway.routes[0].predicates[0]=Path=/api/product
+```
+```properties
+# Order service route
+spring.cloud.gateway.routes[1].id=order-service
+spring.cloud.gateway.routes[1].uri=lb://order-service
+spring.cloud.gateway.routes[1].predicates[0]=Path=/api/order
+```
+```properties
+# Inventory service route
+spring.cloud.gateway.routes[2].id=inventory-service
+spring.cloud.gateway.routes[2].uri=lb://inventory-service
+spring.cloud.gateway.routes[2].predicates[0]=Path=/api/inventory
 ```
