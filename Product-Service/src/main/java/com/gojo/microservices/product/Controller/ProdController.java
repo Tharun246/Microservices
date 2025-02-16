@@ -1,9 +1,8 @@
-package com.gojo.microservices.product.ProductController;
+package com.gojo.microservices.product.Controller;
 
 import com.gojo.microservices.product.Dto.ProductRequest;
 import com.gojo.microservices.product.Dto.ProductResponse;
 import com.gojo.microservices.product.Model.Product;
-import com.gojo.microservices.product.Repository.ProdRepo;
 import com.gojo.microservices.product.Service.ProdService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

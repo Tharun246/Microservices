@@ -134,11 +134,11 @@ eureka.instance.instance-id=${spring.application.name}:${random.int}
 ## **API Gateway**
 > Route requests from user to the respective service
 ### Add the below dependencies
-```properties
+```xml
  <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-gateway-mvc</artifactId>
-    </dependency>
+   <groupId>org.springframework.cloud</groupId>
+   <artifactId>spring-cloud-starter-gateway</artifactId>
+</dependency>
 ```
 ```xml
  <dependency>
@@ -150,30 +150,46 @@ eureka.instance.instance-id=${spring.application.name}:${random.int}
 ```properties
 eureka.client.serviceUrl.defaultZone=http://localhost:8761/eureka
 spring.application.name=api-gateway
-
-# logging level
-logging.level.root=INFO
-logging.level.org.springframework.cloud.gateway.route.RouteDefinitionLocator=INFO
-logging.level.org.springframework.cloud.gateway=TRACE
+eureka.instance.prefer-ip-address=true
 ```
-```properties
+**For Each MicroService Add the below**
+ ```properties
 # Product service route
-# we can define multiple routes , that's why the indexing
 spring.cloud.gateway.routes[0].id=product-service
 spring.cloud.gateway.routes[0].uri=lb://product-service
-# whenever we receive a request with path like this 
-# It will call product service
-spring.cloud.gateway.routes[0].predicates[0]=Path=/api/product
+spring.cloud.gateway.routes[0].predicates[0]=Path=/api/products # should be same as the endpoint 
+```
+
+**Accessing**
+> Now if you make a request `http://localhost:8080/api/products` it'll redirect to `/api/products`
+
+***We can also make the request to discovery server go through gateway***
+```properties
+# Discovery service route
+spring.cloud.gateway.routes[3].id=eureka-server
+spring.cloud.gateway.routes[3].uri=lb://localhost:8761
+spring.cloud.gateway.routes[3].predicates[0]=Path=/eureka/web
+```
+***Now the issue is we don't have an api like this configured in discovery server*** `/eureka/web`
+
+```
+We want to hit /eureka/hub but want it to to redirect us to
+```
+`localhost:8761/`
+***To achieve the above we need to add the below filter***
+```properties
+spring.cloud.gateway.routes[3].filters[0]=SetPath=/
 ```
 ```properties
-# Order service route
-spring.cloud.gateway.routes[1].id=order-service
-spring.cloud.gateway.routes[1].uri=lb://order-service
-spring.cloud.gateway.routes[1].predicates[0]=Path=/api/order
+# Discovery service Static resource route
+spring.cloud.gateway.routes[4].id=eureka-server
+spring.cloud.gateway.routes[4].uri=http://localhost:8761
+spring.cloud.gateway.routes[4].predicates[0]=Path=/eureka/**
 ```
-```properties
-# Inventory service route
-spring.cloud.gateway.routes[2].id=inventory-service
-spring.cloud.gateway.routes[2].uri=lb://inventory-service
-spring.cloud.gateway.routes[2].predicates[0]=Path=/api/inventory
-```
+
+
+
+
+
+
+
