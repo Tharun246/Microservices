@@ -22,7 +22,8 @@
     <module>Order-Service</module>
     <module>Inventory-Service</module>
       <module>Discovery-Service</module>
-      <module>API_Gateway</module>
+    <module>API-Gateway</module>
+
   </modules>
 
   <properties>
