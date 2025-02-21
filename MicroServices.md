@@ -88,14 +88,14 @@ To enable service discovery, we will create a discovery service that stores info
     }
     ```
 
-3.**In your `application.properties`, configure Eureka Server**:
+3.***In your `application.properties`, configure Eureka Server***:
 
-    ```properties
+    
     eureka.instance.hostname=localhost
     eureka.client.register-with-eureka=false
     eureka.client.fetch-registry=false
     server.port=8761
-    ```
+    
 
 ### **Inside each service's `pom.xml`**
 
@@ -173,9 +173,9 @@ spring.cloud.gateway.routes[3].predicates[0]=Path=/eureka/web
 ***Now the issue is we don't have an api like this configured in discovery server*** `/eureka/web`
 
 ```
-We want to hit /eureka/hub but want it to to redirect us to
+We want to hit /eureka/hub and want it to to redirect us to
+localhost:8761/
 ```
-`localhost:8761/`
 ***To achieve the above we need to add the below filter***
 ```properties
 spring.cloud.gateway.routes[3].filters[0]=SetPath=/
