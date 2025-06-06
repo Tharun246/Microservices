@@ -1,7 +1,6 @@
 package com.example.Inventory_Service.Controller;
 
 import com.example.Inventory_Service.Dto.InvResponse;
-import com.example.Inventory_Service.Repository.InventoryRepo;
 import com.example.Inventory_Service.Service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,7 @@ public class InventoryController
     @ResponseStatus(HttpStatus.OK)
     public List<InvResponse> isInStock(@RequestParam List<String> skuCodes)
     {
-        return inventoryService.isInStockInList(skuCodes);
+        return inventoryService.isStockInList(skuCodes);
     }
 
 }

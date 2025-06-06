@@ -73,7 +73,7 @@ To enable service discovery, we will create a discovery service that stores info
 ```xml
  <properties>
     <java.version>17</java.version>
-    <spring-cloud.version>2024.0.0</spring-cloud.version>
+    <spring-cloud.version>2025.0.0</spring-cloud.version>
  </properties>
 ```
 2. **Create a Spring Boot application file** and annotate it with `@EnableEurekaServer`:
